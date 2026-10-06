@@ -2,10 +2,10 @@
 
 ## Next
 
-- [ ] Vet `calamine` with the `crate-architect` agent (via `/add-crate`): version, feature flags, and what it can tell apart — sheet visibility, encrypted files, charts-only sheets, formulas without cached values (`DESIGN.md` § 9 q. 5).
-- [ ] Implement `sheets` (with `--json`), replacing the scaffold stub.
-- [ ] Implement `csv`: BOM, A1 anchoring, ISO dates, the naming template, no-clobber, `--skip-existing`, `--dry-run`, atomic writes (`DESIGN.md` §§ 5, 7).
-- [ ] Implement `cells` (JSONL) and `check` (exit 3 on findings).
-- [ ] Synthetic fixture suite per `DESIGN.md` § 8; then the local acceptance run against the KCS-Board treasurer workbook.
-- [ ] Ask each consumer to audit the first release (`DESIGN.md` § 2): Obsidian-Brain (multi-sheet naming, hidden sheets), the KCS-Board vault (the pending `-fromXlsx.csv` copies), KCS-Assistant (the `email-indexer` hook), eml-tool (whether the hook lives there).
+- [ ] When `cli-contract` is released, replace its path dependency with a version or git dependency so a clone builds (Chris, ask 0002: path dependency until then; `DESIGN.md` § 10).
+- [ ] Ask each consumer to audit the first release (`DESIGN.md` § 2): Obsidian-Brain (naming, the `cells` JSONL for its detectors; it will run the Board-vault bulk conversion), KCS-Assistant (the `email-indexer` hook, `csv --skip-existing --json`).  eml-tool: no change wanted (`DESIGN.md` § 10).
 - [ ] Run `/audit-cli` on the first release.
+- [ ] `plans/plan-0001`: detect charts and images on ordinary `.xlsx` worksheets.
+- [ ] A readable `.xls` fixture: rust_xlsxwriter cannot write BIFF, so `.xls` reading is covered only by the local corpus run (`DESIGN.md` § 10) and the encrypted-OLE test; a hand-built minimal BIFF8 stream would pin it.
+- [ ] Read `.xlsb` cell by cell too (calamine has an `.xlsb` cells reader), so a far stray value there cannot exhaust memory as it can today; `.xls` and `.ods` have no streaming reader, so pre-check their dimensions if calamine exposes them (`DESIGN.md` § 10).
+- [ ] An `.xlsb` fixture, for the same reason as the `.xls` one.

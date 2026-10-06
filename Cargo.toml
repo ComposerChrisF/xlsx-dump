@@ -1,6 +1,6 @@
 [package]
 name = "xlsx-dump"
-version = "0.1.0"
+version = "0.2.0"
 edition = "2024"
 rust-version = "1.91"
 description = "Dump spreadsheet workbooks (.xlsx, .xls, .ods) to CSV and JSON — values and formulas — for agents and spreadsheet apps."
@@ -22,9 +22,22 @@ path = "src/main.rs"
 
 [dependencies]
 anyhow = "1"
+calamine = "0.36.1"
 clap = { version = "4.5", features = ["derive", "string"] }
+cli-contract = { version = "0.5.1", path = "../cli-contract" }
+csv = "1.4"
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+tempfile = "3"
 
 [dev-dependencies]
 assert_cmd = "2"
+cfb = "0.15"
 pretty_assertions = "1.4"
-tempfile = "3"
+rust_xlsxwriter = "0.99.1"
+zip = { version = "8.6", default-features = false, features = ["deflate"] }
+
+# The reader can panic on a malformed binary record; `workbook.rs` catches that per call and
+# reports the file (exit 1).  `abort` would turn it back into a crash.
+[profile.release]
+panic = "unwind"

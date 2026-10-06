@@ -33,10 +33,15 @@ Commit through `/commit` (it picks `commit-rust-cli`), never a hand-rolled `git 
 |---|---|
 | `src/main.rs` | Entry point; silent exit 0 on BrokenPipe, exit 1 on error |
 | `src/lib.rs` | `run()` and subcommand dispatch; returns `ExitCode` so findings can exit 3 |
-| `src/cli.rs` | clap definitions; the exit-code table in `after_long_help` |
-| `src/types.rs` | Every serde type for `--json` output |
-
-At scaffolding the only subcommand is a `sheets` stub that fails loudly.  `DESIGN.md` § 4 proposes the real surface (`sheets`, `csv`, `cells`, `check`).
+| `src/cli.rs` | clap definitions; the exit-code table, naming rule, CSV contract, and reader limits in `after_long_help` |
+| `src/workbook.rs` | Opening (format sniffing, encrypted/corrupt/sheetless detection, panic containment) and reading sheets into a sparse, format-independent cell list |
+| `src/render.rs` | Values as CSV text and typed JSON (15-digit numbers); the A1-anchored CSV grid |
+| `src/dates.rs` | Excel serials to ISO 8601 dates, times, and durations (1900 and 1904 systems) |
+| `src/naming.rs` | The `--name` template, the `-from<Ext>` marker, sheet-name sanitizing |
+| `src/output.rs` | The three-state clobber probe (via `cli-contract`) and atomic no-clobber writes |
+| `src/commands/` | One module per subcommand; `mod.rs` holds sheet selection |
+| `src/types.rs` | Every serde type for `--json` / JSONL output — field names are a consumer contract |
+| `tests/common/mod.rs` | Synthetic fixture builders (rust_xlsxwriter, zip rewrites, cfb) |
 
 ## Design Tenets
 
@@ -49,11 +54,13 @@ At scaffolding the only subcommand is a `sheets` stub that fails loudly.  `DESIG
 
 ## Gotchas
 
-- **`calamine` ranges start at the first used cell, not A1.**  Pad, or column positions shift.
+- **`calamine` ranges start at the first used cell, not A1.**  Pad, or column positions shift.  The value and formula ranges start independently; index by absolute position.
+- **Never `open_workbook_auto`.**  It discards calamine’s “password protected” error for an unexpected extension; `workbook.rs` sniffs the container instead.  `DESIGN.md` § 10.
+- **rust_xlsxwriter always caches a formula value** and cannot write the 1904 system; the fixtures for those cases rewrite the package with `zip` (`tests/common/mod.rs`).
 - **Excel dates are numbers with a format.**  A date `calamine` cannot classify stays a number; the JSON must say which it is, never guess.
 - **Sheet names are not filenames.**  Sanitize by a documented rule, and refuse a collision rather than overwrite one sheet’s output with another’s.
 - **Fixtures are synthetic, always.**  The repo is public.  Never commit a real KCS, personal, or financial workbook, nor a CSV made from one, not even with figures altered.  The real treasurer workbook in the KCS-Board vault is a _local_ acceptance oracle only (`DESIGN.md` § 8).
 
 ## Roadmap
 
-The work queue is `TODO.md`; the open questions to settle with the consumers are `DESIGN.md` § 9.
+The work queue is `TODO.md`; the consumer questions are `DESIGN.md` § 9, and their rulings § 10.

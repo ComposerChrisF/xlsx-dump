@@ -1,9 +1,11 @@
 # xlsx-dump — TODO
 
+Both consumer audits of 0.2.0 passed with no defects (6-Oct-2026): Obsidian-Brain converted the Board vault (23 workbooks, 27 CSVs; Board vault `11b4505`), and KCS-Assistant wired its `email-indexer` hook (its `f97d39c`).  No real workbook so far holds a date cell, so the date path is covered by the synthetic fixtures only.
+
 ## Next
 
 - [ ] When `cli-contract` is released, replace its path dependency with a version or git dependency so a clone builds (Chris, ask 0002: path dependency until then; `DESIGN.md` § 10).
-- [ ] Ask each consumer to audit the first release (`DESIGN.md` § 2): Obsidian-Brain (naming, the `cells` JSONL for its detectors; it will run the Board-vault bulk conversion), KCS-Assistant (the `email-indexer` hook, `csv --skip-existing --json`).  eml-tool: no change wanted (`DESIGN.md` § 10).
+- [ ] `plans/plan-0002`: `--numbers format`, rounding a number to its cell's fixed decimals — KCS-Assistant's stated need from its 0.2.0 audit (QuickBooks drift such as `12.3399999999999` in 2-decimal cells).
 - [ ] Run `/audit-cli` on the first release.
 - [ ] `plans/plan-0001`: detect charts and images on ordinary `.xlsx` worksheets.
 - [ ] A readable `.xls` fixture: rust_xlsxwriter cannot write BIFF, so `.xls` reading is covered only by the local corpus run (`DESIGN.md` § 10) and the encrypted-OLE test; a hand-built minimal BIFF8 stream would pin it.

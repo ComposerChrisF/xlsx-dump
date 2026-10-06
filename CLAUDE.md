@@ -2,6 +2,8 @@
 
 A read-only CLI that dumps spreadsheet workbooks (`.xlsx`, `.xls`, `.ods`, via the `calamine` crate) to CSV and JSON, values and formulas, so agents and spreadsheet apps can read what arrives as an email attachment.  A sibling of `pdf-dump`.  It exists because three sessions in two vaults hit unreadable KCS workbooks and worked around them by hand; the full story, the consumers, and every contract are in **`DESIGN.md`** — read it before writing code.
 
+**Consumers:** Obsidian-Brain (owns the `-fromXlsx.csv` naming rule; its web app scans hidden sheets), the KCS-Board vault (the first bulk run), the KCS-Assistant vault (the `email-indexer` hook), and eml-tool (a possible home for that hook).  What each needs is `DESIGN.md` § 2; change nothing that breaks one of them without asking it.
+
 ## Where the Current State Lives
 
 | The question | The source |

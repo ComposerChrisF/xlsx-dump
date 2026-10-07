@@ -581,6 +581,47 @@ fn overwrite_never_replaces_an_input_workbook() {
     assert!(stdout(&out).contains("input workbooks"), "{}", stdout(&out));
 }
 
+/// bug-0001: an input spelled so its `stat` fails (`ENAMETOOLONG`, beyond `PATH_MAX` on macOS and
+/// Linux alike) is Unknown, so another workbook's output must not replace the file it names.
+#[test]
+fn overwrite_never_replaces_an_input_that_could_not_be_inspected() {
+    let dir = TempDir::new().unwrap();
+    std::fs::create_dir(dir.path().join("src")).unwrap();
+    let wb = common::single(&dir.path().join("src"), "R.xlsx");
+    std::fs::copy(&wb, dir.path().join("R.csv")).unwrap();
+    let before = std::fs::read(dir.path().join("R.csv")).unwrap();
+    let long = format!("{}R.csv", "./".repeat(2100));
+    let args = [
+        "csv",
+        "--overwrite",
+        "--output-dir",
+        ".",
+        "--name",
+        "{stem}.csv",
+        &long,
+        "src/R.xlsx",
+    ];
+    let dry = bin()
+        .current_dir(dir.path())
+        .args(args)
+        .arg("--dry-run")
+        .output()
+        .unwrap();
+    assert!(!stdout(&dry).contains("would write"), "{}", stdout(&dry));
+    let out = bin().current_dir(dir.path()).args(args).output().unwrap();
+    assert_eq!(code(&out), 1);
+    assert_eq!(
+        std::fs::read(dir.path().join("R.csv")).unwrap(),
+        before,
+        "the input was replaced"
+    );
+    assert!(
+        stdout(&out).contains("could not be inspected"),
+        "{}",
+        stdout(&out)
+    );
+}
+
 #[test]
 fn aliased_paths_to_one_directory_collide() {
     let dir = TempDir::new().unwrap();

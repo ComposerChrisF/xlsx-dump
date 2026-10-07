@@ -63,11 +63,14 @@ pub struct Policy<'a> {
     pub dir_exists: bool,
     /// The identities of every input workbook in the run.
     pub inputs: &'a HashSet<FileId>,
+    /// An input that could not be inspected, with why.  While there is one, `inputs` is
+    /// incomplete: an existing file might be that input, so `--overwrite` may replace nothing.
+    pub uninspected: Option<&'a str>,
 }
 
 /// Probe an output path three ways.  Only a proven absence, or the caller's explicit
-/// `--overwrite` over a regular file that is not an input, licenses a write; a path that could not
-/// be inspected is refused, never treated as absent (`positive-evidence-of-absence.md`).
+/// `--overwrite` over a regular file that is provably not an input, licenses a write; a path that
+/// could not be inspected is refused, never treated as absent (`positive-evidence-of-absence.md`).
 pub fn plan(path: &Path, policy: &Policy<'_>) -> Plan {
     if !policy.dir_exists {
         return Plan::Write;
@@ -92,7 +95,17 @@ pub fn plan(path: &Path, policy: &Policy<'_>) -> Plan {
                     path.display()
                 ));
             }
-            Ok(_) => {}
+            Ok(_) => {
+                if let (true, Some(input)) = (policy.overwrite, policy.uninspected) {
+                    // The protected set is incomplete, so this file may be the input that could
+                    // not be inspected: Unknown never licenses the replacement.
+                    return Plan::Refuse(format!(
+                        "{} exists, and an input could not be inspected ({input}), so it cannot \
+                         be ruled out as that input; refusing to replace it",
+                        path.display()
+                    ));
+                }
+            }
             Err(e) => return Plan::Refuse(format!("cannot inspect {}: {e}", path.display())),
         },
     }

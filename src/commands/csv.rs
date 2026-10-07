@@ -31,6 +31,9 @@ struct Run<'a> {
     /// False in a dry run whose `--output-dir` would be created: nothing can be in it yet.
     dir_exists: bool,
     inputs: HashSet<FileId>,
+    /// The first input whose identity could not be inspected, with why: while there is one,
+    /// `inputs` is incomplete, so no existing file may be replaced.
+    uninspected: Option<String>,
     /// Output names claimed so far, keyed on the canonical directory and the case-folded name.
     claimed: HashSet<String>,
     /// Files this run has written, by identity.
@@ -53,18 +56,29 @@ pub fn run(args: &CsvArgs) -> Result<ExitCode> {
         }
         None => None,
     };
-    // An input that cannot be inspected fails when it is opened; one that can is protected from
-    // ever being replaced by an output of this run.
-    let inputs = args
-        .files
-        .iter()
-        .filter_map(|f| FileId::of(f).ok().flatten())
-        .collect();
+    // An input that can be inspected is protected from ever being replaced by an output of this
+    // run.  One that cannot (EACCES, ENAMETOOLONG, …) fails when it is opened, but its file may
+    // still be reachable under another spelling, so it leaves the protected set incomplete and
+    // every --overwrite of an existing file is refused (bug-0001).
+    let mut inputs = HashSet::new();
+    let mut uninspected = None;
+    for f in &args.files {
+        match FileId::of(f) {
+            Ok(Some(id)) => {
+                inputs.insert(id);
+            }
+            Ok(None) => {}
+            Err(e) => {
+                uninspected.get_or_insert_with(|| format!("{}: {e}", f.display()));
+            }
+        }
+    }
     let mut run = Run {
         args,
         output_dir,
         dir_exists,
         inputs,
+        uninspected,
         claimed: HashSet::new(),
         written: HashSet::new(),
     };
@@ -256,6 +270,7 @@ fn convert(file: &Path, run: &mut Run<'_>) -> CsvFileReport {
                     skip_existing: args.skip_existing,
                     dir_exists: run.dir_exists,
                     inputs: &run.inputs,
+                    uninspected: run.uninspected.as_deref(),
                 },
             )
         };

@@ -65,7 +65,9 @@ skips them (and a sheet named with --sheet that it would skip is exit 1).
 Writing: each file is written atomically (temporary file, then rename), with the mode a new
 file normally gets, and never replaces an existing file unless --overwrite is given.  Even with
 --overwrite, an output is refused if it is one of the run's input workbooks, or a file this run
-already wrote under a name the filesystem treats as the same (case, Unicode normalization).
+already wrote under a name the filesystem treats as the same (case, Unicode normalization); and
+while any input cannot be inspected (permission denied, a path too long), no existing file is
+replaced, since it cannot be ruled out as that input.
 Every output of a workbook is planned before any is written: if one would be refused, none of
 that workbook's files is written.  A write that fails afterwards (a full disk, a file that
 appeared meanwhile) leaves the files already written; the report lists each, and exit is 1.

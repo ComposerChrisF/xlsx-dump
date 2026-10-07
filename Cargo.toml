@@ -1,6 +1,6 @@
 [package]
 name = "xlsx-dump"
-version = "0.2.1"
+version = "0.2.2"
 edition = "2024"
 rust-version = "1.91"
 description = "Dump spreadsheet workbooks (.xlsx, .xls, .ods) to CSV and JSON — values and formulas — for agents and spreadsheet apps."
@@ -29,6 +29,7 @@ csv = "1.4"
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
 tempfile = "3"
+unicode-normalization = "0.1.25"
 
 [dev-dependencies]
 assert_cmd = "2"

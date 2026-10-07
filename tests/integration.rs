@@ -649,32 +649,44 @@ fn aliased_paths_to_one_directory_collide() {
 }
 
 #[test]
-fn unicode_normalization_twins_never_silently_merge() {
-    let dir = TempDir::new().unwrap();
-    let wb = common::nfc_nfd(dir.path());
-    let out = run(&["csv", s(&wb), "--overwrite", "--json"]);
-    // On a normalization-insensitive volume the second write is refused; on one that keeps both
-    // names, both files exist.  Never: two `written` reports landing in one file.
-    let v = json(&out);
-    let written = v["files"][0]["outputs"]
-        .as_array()
-        .unwrap()
-        .iter()
-        .filter(|o| o["status"] == "written")
-        .count();
-    let files = std::fs::read_dir(dir.path())
-        .unwrap()
-        .filter(|e| {
-            e.as_ref()
-                .unwrap()
-                .path()
-                .extension()
-                .is_some_and(|x| x == "csv")
-        })
-        .count();
-    assert_eq!(written, files, "{v}");
-    if files == 1 {
-        assert_eq!(code(&out), 1);
+fn unicode_normalization_twins_are_refused_before_anything_is_written() {
+    // bug-0002: the clash is caught at planning time on every filesystem, so the workbook is
+    // all-or-nothing — never one sheet's CSV left without its twin.  With and without --overwrite.
+    let pairs = [
+        ("Caf\u{e9}", "Cafe\u{301}"), // NFC against NFD
+        ("CAFE\u{301}", "caf\u{e9}"), // case and normalization at once
+    ];
+    for ((first, second), extra) in pairs
+        .into_iter()
+        .flat_map(|p| [(p, &[][..]), (p, &["--overwrite"][..])])
+    {
+        let dir = TempDir::new().unwrap();
+        let wb = common::twins(dir.path(), first, second);
+        let out = bin()
+            .args(["csv", s(&wb), "--json"])
+            .args(extra)
+            .output()
+            .unwrap();
+        assert_eq!(code(&out), 1, "{}", stdout(&out));
+        let v = json(&out);
+        let statuses: Vec<_> = v["files"][0]["outputs"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .map(|o| o["status"].as_str().unwrap().to_string())
+            .collect();
+        assert_eq!(statuses, ["withheld", "refused"], "{v}");
+        let csvs = std::fs::read_dir(dir.path())
+            .unwrap()
+            .filter(|e| {
+                e.as_ref()
+                    .unwrap()
+                    .path()
+                    .extension()
+                    .is_some_and(|x| x == "csv")
+            })
+            .count();
+        assert_eq!(csvs, 0, "a CSV was written: {v}");
     }
 }
 

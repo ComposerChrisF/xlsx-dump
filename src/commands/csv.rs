@@ -13,6 +13,7 @@ use std::process::ExitCode;
 
 use anyhow::{Context, Result};
 use cli_contract::{DestPolicy, check_destination, ensure_destination, ignore_broken_pipe};
+use unicode_normalization::UnicodeNormalization;
 
 use crate::cli::CsvArgs;
 use crate::commands::{hidden_note, is_explicit, select};
@@ -246,14 +247,16 @@ fn convert(file: &Path, run: &mut Run<'_>) -> CsvFileReport {
         output.uncached_formulas = content.uncached_count();
 
         // The directory canonical (so `d/` and `./d/` and a symlinked `d` agree) and the name
-        // case-folded (the default macOS volume is case-insensitive).  Names that differ only in
-        // Unicode normalization still slip past this key; write_atomic's identity check is the
-        // backstop for those.
+        // case-folded then NFC-normalized (the default macOS volume ignores both case and
+        // normalization: `Café` and `Cafe\u{301}` are one name), so such a clash is refused here,
+        // before anything is written (bug-0002).  Folding first keeps the key in NFC, since
+        // lowercasing can itself decompose (`İ` becomes `i` + U+0307).  write_atomic's identity
+        // check remains the backstop for whatever else a filesystem folds.
         let key = format!(
             "{}/{}",
             dir.canonicalize().unwrap_or_else(|_| dir.clone()).display(),
             path.file_name()
-                .map(|n| n.to_string_lossy().to_lowercase())
+                .map(|n| n.to_string_lossy().to_lowercase().nfc().collect::<String>())
                 .unwrap_or_default()
         );
         let plan = if !run.claimed.insert(key) {

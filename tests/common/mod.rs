@@ -289,18 +289,19 @@ pub fn missing_part(dir: &Path) -> PathBuf {
     path
 }
 
-/// Two sheets whose names differ only in Unicode normalization: `Café` precomposed (NFC) and
-/// decomposed (NFD).  The default macOS volume treats the two file names as one.
-pub fn nfc_nfd(dir: &Path) -> PathBuf {
+/// Two sheets whose names differ only in Unicode normalization (and perhaps case): `Café`
+/// precomposed (NFC) and decomposed (NFD), say.  The default macOS volume treats the two file
+/// names as one.
+pub fn twins(dir: &Path, first: &str, second: &str) -> PathBuf {
     let path = dir.join("Accents.xlsx");
     let mut wb = XlsxWriter::new();
     wb.add_worksheet()
-        .set_name("Caf\u{e9}")
+        .set_name(first)
         .unwrap()
         .write_string(0, 0, "first")
         .unwrap();
     wb.add_worksheet()
-        .set_name("Cafe\u{301}")
+        .set_name(second)
         .unwrap()
         .write_string(0, 0, "second")
         .unwrap();

@@ -47,7 +47,8 @@ a sheet's derived copy has one name however it was made.  --name replaces both f
   {sheet}    the sheet name, sanitized: / \\ : * ? \" < > | and control characters become _,
              leading and trailing dots and spaces are trimmed, an empty result is Sheet<index>
   {index}    the sheet's 1-based position in the workbook
-Two sheets whose names collide (case-insensitively) are refused, never overwritten.
+Two sheets whose names collide (ignoring case and Unicode normalization, as the default macOS
+volume does) are refused before anything is written, never overwritten.
 
 CSV content: UTF-8 with a BOM (--no-bom omits it); RFC 4180 quoting, LF line endings; anchored
 at A1 (column N of the CSV is column N of the sheet, row N is row N; a row that is empty in a

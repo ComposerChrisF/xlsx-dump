@@ -188,7 +188,9 @@ checksum = "1c133bc6a41be0d194c306b5506d15e6feeea7b1d6604bd3f8310dfb2ca96486"
 
 [[package]]
 name = "cli-contract"
-version = "0.5.1"
+version = "0.6.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "dea4ceb160d80ea339ae82f894a84c85972e8bc90a41b540a7ebef836c541a1b"
 dependencies = [
  "clap",
  "libc",
@@ -786,7 +788,7 @@ dependencies = [
 
 [[package]]
 name = "xlsx-dump"
-version = "0.2.2"
+version = "0.2.3"
 dependencies = [
  "anyhow",
  "assert_cmd",

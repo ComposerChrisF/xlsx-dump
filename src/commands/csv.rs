@@ -26,8 +26,7 @@ use crate::workbook::Workbook;
 /// State shared by every workbook of one run.
 struct Run<'a> {
     args: &'a CsvArgs,
-    /// The output directory, made absolute (cli-contract bug-0004 mis-resolves a relative
-    /// single-component path); `None` for beside-each-workbook.
+    /// The output directory; `None` for beside-each-workbook.
     output_dir: Option<PathBuf>,
     /// False in a dry run whose `--output-dir` would be created: nothing can be in it yet.
     dir_exists: bool,
@@ -45,15 +44,14 @@ pub fn run(args: &CsvArgs) -> Result<ExitCode> {
     let mut dir_exists = true;
     let output_dir = match &args.output_dir {
         Some(dir) => {
-            let dir = std::path::absolute(dir)?;
             let policy = DestPolicy::Create(args.create_destination);
             if args.dry_run {
-                check_destination(&dir, &policy)?;
+                check_destination(dir, &policy)?;
                 dir_exists = dir.is_dir();
             } else {
-                ensure_destination(&dir, &policy)?;
+                ensure_destination(dir, &policy)?;
             }
-            Some(dir)
+            Some(dir.clone())
         }
         None => None,
     };

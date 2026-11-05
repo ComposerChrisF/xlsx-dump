@@ -10,7 +10,7 @@ Spreadsheet workbooks keep arriving in Chris’s vaults as email attachments —
 - **16-Sep-2026, KCS-Assistant:** the same workbook (`KCS-Financials-20260613-Treasurer-BudgetVsActualsByClass.xlsx`) was extracted by a one-off script.  Chris then decided to build this tool (KCS-Assistant memory `project_xlsx_dump_cli.md`; Proj/Coding’s `TODO.md`).
 - **6-Oct-2026, Obsidian-Brain:** priming the KCS-Board vault for go-live, the session found every workbook’s `-fromXlsx.csv` copy pending because no converter exists, and asked to install Python `xlsx2csv` via Homebrew.
 
-Per the portfolio rule “feature gaps get plans, not workarounds” (`~/.claude/rules/strategy-defaults.md`), the answer is a tool, not `xlsx2csv`/csvkit.  What a house tool adds over `xlsx2csv`: the **formulas** (a budget-versus-actual workbook’s calculations are what a reviewer wants to check), **`--json`** typed cell records for agents, the **UTF-8 BOM**, the portfolio **exit codes and path contracts**, and **loud `Unknown`** where a converter would print an empty file.
+Per the portfolio rule that feature gaps get plans, not workarounds, the answer is a tool, not `xlsx2csv`/csvkit.  What a house tool adds over `xlsx2csv`: the **formulas** (a budget-versus-actual workbook’s calculations are what a reviewer wants to check), **`--json`** typed cell records for agents, the **UTF-8 BOM**, the portfolio **exit codes and path contracts**, and **loud `Unknown`** where a converter would print an empty file.
 
 Its model is `pdf-dump`: an inspection-and-extraction tool over one opaque format.
 
@@ -63,11 +63,11 @@ xlsx-dump check <FILE>...
 
 ## 5.  The CSV Contract
 
-- **UTF-8 with a BOM by default** (`~/.claude/rules/csv-utf8-bom.md`: Excel on macOS mis-reads UTF-8 without one; the KCS ‘okina history).  `--no-bom` for a machine consumer that cannot strip one.
+- **UTF-8 with a BOM by default** (the house rule on CSV files: Excel on macOS mis-reads UTF-8 without one; the KCS ‘okina history).  `--no-bom` for a machine consumer that cannot strip one.
 - **RFC 4180 quoting**, via the `csv` crate.
 - **Anchored at A1.**  `calamine`’s range starts at the first _used_ cell, not at A1, so a sheet whose data begins at C3 would lose two columns and two rows of position if dumped naively.  Pad leading empty rows and columns so column _N_ of the CSV is column _N_ of the sheet.  (Gotcha to pin with a test.)
 - **Values, not displays.**  Numbers at full precision, unformatted — no thousands separators, no currency symbols, no rounding to the displayed decimals.  Booleans `TRUE`/`FALSE`.  Error cells as their literal text (`#DIV/0!`).  Whether to offer a “displayed text” mode is an open question (§ 9); `calamine` exposes number formats only partly.
-- **Dates as ISO 8601** — `YYYY-MM-DD`, or `YYYY-MM-DDTHH:MM:SS` when a time part exists (`~/.claude/rules/dates-and-times.md`: machine-facing dates are ISO).  An Excel date is a serial number with a date format; one `calamine` cannot classify as a date stays a number, and the JSON says which.
+- **Dates as ISO 8601** — `YYYY-MM-DD`, or `YYYY-MM-DDTHH:MM:SS` when a time part exists (the dates-and-times rule: machine-facing dates are ISO).  An Excel date is a serial number with a date format; one `calamine` cannot classify as a date stays a number, and the JSON says which.
 - **Merged regions:** the value sits in the top-left cell; the others are blank.  The JSON lists the regions.
 
 ### Naming the output
@@ -80,7 +80,7 @@ The only consumer convention in hand is Obsidian-Brain’s: `<master>-fromXlsx.c
 
 ## 6.  Loud `Unknown` — The Contract That Matters Most
 
-The failure this tool must never have is the one `xlsx2csv` has by default: **a plausible empty CSV where the truth is “could not read”**.  A detector scanning that CSV reports “nothing sensitive”; a reviewer reads “no figures”.  Per `~/.claude/rules/positive-evidence-of-absence.md`, every case below is `Unknown`, and `Unknown` is loud:
+The failure this tool must never have is the one `xlsx2csv` has by default: **a plausible empty CSV where the truth is “could not read”**.  A detector scanning that CSV reports “nothing sensitive”; a reviewer reads “no figures”.  Per the positive-evidence-of-absence rule, every case below is `Unknown`, and `Unknown` is loud:
 
 | Case | Behavior |
 |---|---|
@@ -95,7 +95,7 @@ The failure this tool must never have is the one `xlsx2csv` has by default: **a 
 
 ## 7.  Path Contracts and Overwriting
 
-Per `~/.claude/rules/cli-exit-codes.md` § Input and Output Paths:
+Per the house rule on exit codes, § Input and Output Paths:
 
 - **A named input that does not exist → exit 1**, naming it.  Never auto-created.
 - **The output directory must exist → exit 1 if not.**  `--create-destination <none|final|all>`, default `none`.  Beside-the-workbook output needs no directory creation at all.

@@ -1,12 +1,11 @@
 [package]
 name = "xlsx-dump"
-version = "0.2.3"
+version = "0.2.4"
 edition = "2024"
 rust-version = "1.91"
 description = "Dump spreadsheet workbooks (.xlsx, .xls, .ods) to CSV and JSON — values and formulas — for agents and spreadsheet apps."
 license = "MIT OR Apache-2.0"
 repository = "https://github.com/ComposerChrisF/xlsx-dump"
-homepage = "https://github.com/ComposerChrisF/xlsx-dump"
 readme = "README.md"
 keywords = ["cli", "xlsx", "spreadsheet", "csv", "excel"]
 categories = ["command-line-utilities"]

@@ -1,0 +1,4 @@
+#!/bin/sh
+# Refuse a commit whose message would publish a private reference.  Enable with:
+#   git config core.hooksPath .githooks
+exec leak-gate message "$1"

@@ -27,6 +27,8 @@ cargo clippy --all-targets -- -D warnings
 
 Commit through `/commit` (it picks `commit-rust-cli`), never a hand-rolled `git commit`.
 
+The leak gate guards every commit: `.githooks/` holds a pre-commit and a commit-msg hook that run `leak-gate` from `PATH` (enable in a fresh clone with `git config core.hooksPath .githooks`).  `.leak-gate.toml` names this repo’s private list, which lives outside the repo and is never committed; `bugs/FLOOR` and `plans/FLOOR` let this repo’s own IDs pass.  A refused commit names the reference; replace it with words.
+
 ## Module Map
 
 | File | Responsibility |

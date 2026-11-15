@@ -70,6 +70,10 @@ pub fn sanitize_sheet(name: &str, index: usize) -> String {
 /// Check a `--name` template on its face: every `{…}` is a known token, braces balance, and the
 /// template names a file, not a path.  Used as a clap value parser, so a bad template is a usage
 /// error (exit 2).
+#[expect(
+    clippy::string_slice,
+    reason = "every index comes from find on an ASCII brace, so each is a character boundary"
+)]
 pub fn validate_template(template: &str) -> Result<String, String> {
     if template.is_empty() {
         return Err("the name template is empty".into());

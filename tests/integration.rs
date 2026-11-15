@@ -1,3 +1,7 @@
+#![expect(
+    clippy::disallowed_methods,
+    reason = "tests build and assert on fixtures in a temp dir"
+)]
 mod common;
 
 use std::path::Path;

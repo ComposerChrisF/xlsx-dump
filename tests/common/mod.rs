@@ -1,6 +1,10 @@
-#![allow(dead_code)]
+#![allow(dead_code, reason = "each test binary uses a subset of these helpers")]
 //! Synthetic fixtures, generated per test.  The repo is public: no real workbook, nor anything
 //! derived from one, is ever committed (`CLAUDE.md` § Gotchas).
+#![expect(
+    clippy::string_slice,
+    reason = "a slice off a character boundary panics, which fails the test"
+)]
 
 use std::io::{Read, Write};
 use std::path::{Path, PathBuf};

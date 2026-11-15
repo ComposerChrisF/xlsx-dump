@@ -42,6 +42,10 @@ struct Run<'a> {
 
 pub fn run(args: &CsvArgs) -> Result<ExitCode> {
     let mut dir_exists = true;
+    #[expect(
+        clippy::disallowed_methods,
+        reason = "check_destination has just proven the directory present or provably absent; the dry run's is_dir only reads which"
+    )]
     let output_dir = match &args.output_dir {
         Some(dir) => {
             let policy = DestPolicy::Create(args.create_destination);
